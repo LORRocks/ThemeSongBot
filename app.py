@@ -96,7 +96,7 @@ def me():
     discord = make_session(token=session.get('oauth2_token'))
     user = discord.get(API_BASE_URL + '/users/@me').json()
 
-    print(user)
+    #print(user)
 
     return render_template("user.html",height=4,username=user["username"])
 
