@@ -52,18 +52,18 @@ def songExists(id):
 
     return False
 
-def handleCooldown():
+def handleCooldown(id):
     return 1 #NOT IMPlEMENTED YET
 
 #Event handlers
 @client.event
 async def on_ready():
-    print("logged in as " + client.user_name)
-    print("id" + client.user.id)
+    print("logged in as " + client.user.name)
+    print("id" + str(client.user.id))
 
 
 @client.event
-async def one_voice_state_update(member, before, after)
+async def on_voice_state_update(member, before, after):
     
     print(str(member.display_name) + " changed voice state")
 
@@ -90,5 +90,18 @@ async def one_voice_state_update(member, before, after)
     
     #Okay, we now know we can play the song
     
+    voiceClient = await after.channel.connect()
+
+    audioPlayer = voiceClient.create_ffmpeg_player('songs/songs' + str(member.id))
+
+    audioPlayer.start()
+
+    while not auidoPlayer.is_done():
+        pass
+
+    await voiceClient.disconnect()
 
     #FUTURE, WHAT IF MULTIPLE CHANNELS EXPERINCE A JOIN ACROSS ONE GUILD?
+
+
+client.run(os.environ.get('BOTTOKEN'))
