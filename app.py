@@ -17,6 +17,7 @@ TOKEN_URL = API_BASE_URL + '/oauth2/token'
 #Store the location of the upload folder and the allowed data type
 UPLOAD_FOLDER="songs"
 ALLOWED_EXTENSIONS = {'mp3'}
+ALLOWED_LENGTH = 500 #max allowed length in seconds
 
 #Initalize the flask app
 app = Flask(__name__)
@@ -31,7 +32,7 @@ if 'http://' in OAUTH2_REDIRECT_URI:
 def token_updater(token):
     session['oauth2_token'] = token
 
-#Make a flask oauth session
+#Make a flask oauth session, so that it is persistent across sessions
 def make_session(token=None, state=None, scope=None):
     return OAuth2Session(
         client_id=OAUTH2_CLIENT_ID,
@@ -49,7 +50,7 @@ def make_session(token=None, state=None, scope=None):
         token_updater=token_updater
     )
 
-#When the user goes to the home page, check if they have a o auth cookie or not
+#When the user goes to the home page, check if they have a o auth cookie or not, otherwise just return the standard template
 @app.route('/')
 def index():
 
@@ -100,6 +101,7 @@ def me():
 
     return render_template("user.html",height=4,username=user["username"])
 
+#A helper method to check if the user is uploading an allowed file
 def allowed_file(filename):
     return '.' in filename and \
            filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
@@ -130,7 +132,7 @@ def upload():
 
             #File length check
             fileCheck = MP3(os.path.join(UPLOAD_FOLDER, filename)+".mp3")
-            if(fileCheck.info.length > 5.5):
+            if(fileCheck.info.length > ALLOWED_LENGTH):
                 os.remove(os.path.join(UPLOAD_FOLDER, filename)+".mp3")
                 return render_template("user.html",username=user["username"],height=10, extratext="Your song was too long, it was not saved. ")
 
