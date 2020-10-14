@@ -1,0 +1,47 @@
+<html>
+    <head>
+        <link rel="stylesheet" type = "text/css" href="/static/index.css">
+
+        <script>
+            function handleColor(){
+                if(document.getElementById('fileToUpload').value == ''){
+                    document.getElementById('loadFile').style.backgroundColor = "#00000"
+                }else{
+                    document.getElementById('loadFile').style.backgroundColor = "#34b356"
+                }
+                
+                console.log('function called')
+            }
+
+        </script>
+
+    </head>
+    <body class="background">
+        <div class = "center-box" style = "height: 68vh;">
+            <div class="logo"></div>
+            <div class="auth-text-box" style="height: {{height}}vh">
+                <p class="auth-text">Hello {{username}}. {{ extratext }}You can upload a new theme below, as long as it is within the restrictions.</p>
+            </div>
+            <div class="auth-text-box upload-box">
+                
+                    <form action="upload" method="POST" enctype="multipart/form-data">
+                        <input type="button" id="loadFile" value="Choose Song" onclick="document.getElementById('fileToUpload').click()">
+                        <input type="file" name="file" id="fileToUpload" hidden="true" onchange="handleColor()"><br>
+                        <input type="submit" value="Upload Song" name="submit" id="submit">
+                    </form>
+            </div>
+
+            <div class="list-holder">
+
+                <h class="list-header">File Restrictions</h>
+
+                <ul class=list>
+                    <li>Only mp3 files</li>
+                    <li>Max length of 3 seconds</li>
+                </ul>
+
+            </div>
+
+        </div>
+    </body>
+</html>

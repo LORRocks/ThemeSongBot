@@ -1,0 +1,130 @@
+.background {
+
+    
+/* Permalink - use to edit and share this gradient: https://colorzilla.com/gradient-editor/#606c88+0,3f4c6b+100;Grey+3D+%232 */
+background: #606c88; /* Old browsers */
+background: -moz-linear-gradient(top,  #606c88 0%, #3f4c6b 100%); /* FF3.6-15 */
+background: -webkit-linear-gradient(top,  #606c88 0%,#3f4c6b 100%); /* Chrome10-25,Safari5.1-6 */
+background: linear-gradient(to bottom,  #606c88 0%,#3f4c6b 100%); /* W3C, IE10+, FF16+, Chrome26+, Opera12+, Safari7+ */
+filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#606c88', endColorstr='#3f4c6b',GradientType=0 ); /* IE6-9 */
+
+
+}   
+
+.center-box {
+
+
+    width: 40%;
+    height: 50vh;
+
+    margin-top: 15vh;
+
+    background-color: #232323;
+    margin-left: 30%;
+
+    border-radius: 20px;
+
+    padding-top: 2%;
+}
+
+.logo{
+
+    margin:auto;
+
+    background-image: url("note.png");
+    background-size: cover;
+
+    min-height:14vh;
+    min-width: 14vh;    
+
+    max-height:14vh;
+    max-width: 14vh;
+
+    border-radius: 50%;
+    border: 4px black solid;
+
+}
+
+.auth-text-box{
+    height: 10vh;
+    width: 70%;
+    margin: auto;
+    margin-top: 5vh;
+}
+
+.log-in-box{
+    background-color: #2C2F33;
+    border-radius: 20px;
+}
+
+.log-in-box:hover{
+    background-color: #23272A;
+    cursor: pointer;
+}
+
+.upload-box{
+    margin-top: 15%;
+    background-color: #2C2F33;
+    border-radius: 20px;
+}
+
+.log-in-text{
+    font: "Trebuchet MS", Helvetica, sans-serif;
+    font-size:170%;
+    color: #7289DA;
+    line-height: 10vh;
+    text-align: center;
+}
+
+.auth-text{
+    font: "Trebuchet MS", Helvetica, sans-serif;
+    font-size:170%;
+    color: white;
+}
+
+input,textarea,select,button {
+    border:none;
+    border-radius: 10px;
+    height: 3vh;
+    margin-left: 30%;
+    margin-top: 3%;
+    width:40%;
+    font: "Trebuchet MS", Helvetica, sans-serif;
+    font-size:110%;
+
+}
+
+input:hover,textarea:hover,select:hover,button:hover{
+    border: 3px black solid;
+}
+
+.list-holder {
+
+    margin: auto;
+    margin-left: 16%;
+    margin-top: 4%;
+    width: 80%;
+}
+
+.list-header{
+
+    font: "Trebuchet MS", Helvetica, sans-serif;
+    font-size:170%;
+    color: white;
+
+}
+
+.list{
+
+    font: "Trebuchet MS", Helvetica, sans-serif;
+    color: white;
+
+}
+
+.list li{
+    font: "Trebuchet MS", Helvetica, sans-serif;
+    color: white;
+    font-size: 120%;
+    list-style-type: square;
+    line-height: 120%;
+}
