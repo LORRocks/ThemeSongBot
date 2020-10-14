@@ -2,52 +2,45 @@ import os
 from flask import *
 from requests_oauthlib import OAuth2Session
 from mutagen.mp3 import MP3;
+import constants
 
-#Import the various bot secret and tokens from the os enviromental variables, you need to set these
-OAUTH2_CLIENT_ID = os.environ['OAUTH_CLIENT_ID']
-OAUTH2_CLIENT_SECRET = os.environ['OAUTH_CLIENT_SECRET']
-OAUTH2_REDIRECT_URI = 'http://localhost:5000/callback' #This will need to be changed when the bot website is hosted
-API_BASE_URL = os.environ.get('API_BASE_URI','https://discordapp.com/api')
-
-#Store the urls for the bot
-AUTHORIZATION_BASE_URL = API_BASE_URL + '/oauth2/authorize'
-TOKEN_URL = API_BASE_URL + '/oauth2/token'
-
-#Store the location of the upload folder and the allowed data type
-UPLOAD_FOLDER="songs"
-ALLOWED_EXTENSIONS = {'mp3'}
-ALLOWED_LENGTH = 500 #max allowed length in seconds
 
 #Initalize the flask app
 app = Flask(__name__)
 app.debug = True
-app.config['SECRET_KEY'] = OAUTH2_CLIENT_SECRET
+app.config['SECRET_KEY'] = constants.OAUTH2_CLIENT_SECRET
 
 #Check if we are using sls or not, set the appropriate settings
-if 'http://' in OAUTH2_REDIRECT_URI:
+if 'http://' in constants.OAUTH2_REDIRECT_URI:
     os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = 'true'
 
 
-def token_updater(token):
-    session['oauth2_token'] = token
-
+#----HELPER METHODS-----
+#A helper method to check if the user is uploading an allowed file
+def allowed_file(filename):
+    return '.' in filename and \
+           filename.rsplit('.', 1)[1].lower() in constants.ALLOWED_EXTENSIONS
 #Make a flask oauth session, so that it is persistent across sessions
 def make_session(token=None, state=None, scope=None):
     return OAuth2Session(
-        client_id=OAUTH2_CLIENT_ID,
+        client_id=constants.OAUTH2_CLIENT_ID,
         token=token,
         state=state,
         scope=scope,
 
-        redirect_uri=OAUTH2_REDIRECT_URI,
+        redirect_uri=constants.OAUTH2_REDIRECT_URI,
         auto_refresh_kwargs={
-            'client_id' : OAUTH2_CLIENT_ID,
-            'client_secret' : OAUTH2_CLIENT_SECRET
+            'client_id' : constants.OAUTH2_CLIENT_ID,
+            'client_secret' : constants.OAUTH2_CLIENT_SECRET
         },
 
-        auto_refresh_url=TOKEN_URL,
+        auto_refresh_url=constants.TOKEN_URL,
         token_updater=token_updater
     )
+def token_updater(token):
+    session['oauth_token'] = token
+
+#---ALL THE ROUTE METHODS FOR FLASK
 
 #When the user goes to the home page, check if they have a o auth cookie or not, otherwise just return the standard template
 @app.route('/')
@@ -66,7 +59,7 @@ def verify():
         'identify')
 
     discord = make_session(scope=scope.split(' '))
-    authorization_url, state = discord.authorization_url(AUTHORIZATION_BASE_URL)
+    authorization_url, state = discord.authorization_url(constants.AUTHORIZATION_BASE_URL)
     session['oauth2_state'] = state
 
     return redirect(authorization_url)
@@ -80,7 +73,7 @@ def callback():
 
     token = discord.fetch_token(
         TOKEN_URL,
-        client_secret=OAUTH2_CLIENT_SECRET,
+        client_secret=constants.OAUTH2_CLIENT_SECRET,
         authorization_response=request.url)
     session['oauth2_token'] = token
 
@@ -94,11 +87,11 @@ def me():
         return redirect(url_for("index"))
 
     discord = make_session(token=session.get('oauth2_token'))
-    user = discord.get(API_BASE_URL + '/users/@me').json()
+    user = discord.get(constants.API_BASE_URL + '/users/@me').json()
 
     #check if the user currently has a song
     filename = "song-" + user["id"]
-    file_exists = os.path.exists(os.path.join(UPLOAD_FOLDER, filename)+".mp3");
+    file_exists = os.path.exists(os.path.join(constants.UPLOAD_FOLDER, filename)+".mp3");
    
     if(file_exists):
         return render_template("user.html",height=4,username=user["username"], extratext = "You currently have a theme song stored. ")
@@ -106,10 +99,6 @@ def me():
     return render_template("user.html",height=4,username=user["username"])
 
 
-#A helper method to check if the user is uploading an allowed file
-def allowed_file(filename):
-    return '.' in filename and \
-           filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 #This is where we will send the songs to be uploaded and handled
 @app.route('/upload', methods=["GET","POST"])
@@ -119,7 +108,7 @@ def upload():
         return redirect(url_for("index"))
 
     discord = make_session(token=session.get('oauth2_token'))
-    user = discord.get(API_BASE_URL + '/users/@me').json()
+    user = discord.get(constants.API_BASE_URL + '/users/@me').json()
 
     if request.method == 'POST':
         if 'file' not in request.files:
@@ -132,21 +121,22 @@ def upload():
 
         if file:
             filename = "song-" + user['id']
-            file.save(os.path.join(UPLOAD_FOLDER, filename)+".mp3")
+            file.save(os.path.join(constants.UPLOAD_FOLDER, filename)+".mp3")
 
             #File length check
-            fileCheck = MP3(os.path.join(UPLOAD_FOLDER, filename)+".mp3")
-            if(fileCheck.info.length > ALLOWED_LENGTH):
-                os.remove(os.path.join(UPLOAD_FOLDER, filename)+".mp3")
+            fileCheck = MP3(os.path.join(constants.UPLOAD_FOLDER, filename)+".mp3")
+            if(fileCheck.info.length > constants.ALLOWED_LENGTH):
+                os.remove(os.path.join(constants.UPLOAD_FOLDER, filename)+".mp3")
                 return render_template("user.html",username=user["username"],height=10, extratext="Your song was too long, it was not saved. ")
 
             return render_template("user.html",username=user["username"],height=10, extratext="Your song was uploaded successfully. ")
 
-    if request.method == "GET":
+    if request.method == "GET": #we should never get to this page, it only acts as a REST endpoint for uploading files
         redirect(url_for("me"))
 
 
-
+#---SETUP
+#run the flask app
 if __name__ == '__main__':
     app.run()
 
