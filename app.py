@@ -2,7 +2,6 @@ import os
 from flask import *
 from requests_oauthlib import OAuth2Session
 from mutagen.mp3 import MP3;
-#import songHandler
 
 #Import the various bot secret and tokens from the os enviromental variables, you need to set these
 OAUTH2_CLIENT_ID = os.environ['OAUTH_CLIENT_ID']
@@ -97,9 +96,15 @@ def me():
     discord = make_session(token=session.get('oauth2_token'))
     user = discord.get(API_BASE_URL + '/users/@me').json()
 
-    #print(user)
-
+    #check if the user currently has a song
+    filename = "song-" + user["id"]
+    file_exists = os.path.exists(os.path.join(UPLOAD_FOLDER, filename)+".mp3");
+   
+    if(file_exists):
+        return render_template("user.html",height=4,username=user["username"], extratext = "You currently have a theme song stored. ")
+   
     return render_template("user.html",height=4,username=user["username"])
+
 
 #A helper method to check if the user is uploading an allowed file
 def allowed_file(filename):
@@ -125,7 +130,6 @@ def upload():
         if not allowed_file(file.filename):
             return render_template("user.html",username=user["username"],height=10,extratext="Your song was not an allowed file type, and was not saved. ")
 
-        
         if file:
             filename = "song-" + user['id']
             file.save(os.path.join(UPLOAD_FOLDER, filename)+".mp3")

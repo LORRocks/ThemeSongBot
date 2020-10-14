@@ -1,4 +1,5 @@
 flask
 mutagen
 discord
+requests_oauthlib
 
