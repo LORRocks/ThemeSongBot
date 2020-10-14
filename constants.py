@@ -13,5 +13,14 @@ TOKEN_URL = API_BASE_URL + '/oauth2/token'
 #Store the location of the upload folder and the allowed data type
 UPLOAD_FOLDER="songs"
 ALLOWED_EXTENSIONS = {'mp3'}
-ALLOWED_LENGTH = 500 #max allowed length in seconds
+ALLOWED_LENGTH = 10 #max allowed length in seconds
+
+#Store the bot token
+BOT_TOKEN = os.environ['BOT_TOKEN']
+
+#Bot cooldown info
+START_COOLDOWN = 40 #in seconds
+MIN_COOLDOWN = 20
+COOLDOWN_MULTPLIER = 3
+
 
