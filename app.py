@@ -72,7 +72,7 @@ def callback():
     discord = make_session(state=session.get('oauth2_state'))
 
     token = discord.fetch_token(
-        TOKEN_URL,
+        constants.TOKEN_URL,
         client_secret=constants.OAUTH2_CLIENT_SECRET,
         authorization_response=request.url)
     session['oauth2_token'] = token
