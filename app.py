@@ -3,7 +3,8 @@ from flask import *
 from requests_oauthlib import OAuth2Session
 from mutagen.mp3 import MP3;
 import constants
-
+import threading
+from pydub import AudioSegment
 
 #Initalize the flask app
 app = Flask(__name__)
@@ -39,6 +40,14 @@ def make_session(token=None, state=None, scope=None):
     )
 def token_updater(token):
     session['oauth_token'] = token
+#This is a method that will peform audio normilization on a file, it seperate to allow being spin off in a different thread so we don't stall returning the webpage
+def normalize_audio(filename):
+    sound = AudioSegment.from_file(filename, "mp3")
+    change_in_dbfs = constants.TARGET_AUDIO_DBFS - sound.dBFS
+    normal_sound = sound.apply_gain(change_in_dbfs)
+    os.remove(filename)
+    normal_sound.export(filename, format="mp3")
+
 
 #---ALL THE ROUTE METHODS FOR FLASK
 
@@ -128,6 +137,11 @@ def upload():
             if(fileCheck.info.length > constants.ALLOWED_LENGTH):
                 os.remove(os.path.join(constants.UPLOAD_FOLDER, filename)+".mp3")
                 return render_template("user.html",username=user["username"],height=10, extratext="Your song was too long, it was not saved. ")
+
+            #Peform the audio normal in a different thread
+            normal_filename = os.path.join(constants.UPLOAD_FOLDER, filename)+".mp3"  
+            normal_thread = threading.Thread(target=normalize_audio, args=(normal_filename,), daemon=True)
+            normal_thread.start()
 
             return render_template("user.html",username=user["username"],height=10, extratext="Your song was uploaded successfully. ")
 
