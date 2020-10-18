@@ -14,6 +14,7 @@ TOKEN_URL = API_BASE_URL + '/oauth2/token'
 UPLOAD_FOLDER="songs"
 ALLOWED_EXTENSIONS = {'mp3'}
 ALLOWED_LENGTH = 10 #max allowed length in seconds
+TARGET_AUDIO_DBFS = -20 #the audio target in dbfs
 
 #Store the bot token
 BOT_TOKEN = os.environ['BOT_TOKEN']
