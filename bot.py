@@ -36,7 +36,7 @@ def update_user_cooldown(id):
 def update_all_cooldowns():
     for id, cooldown in users_in_cooldown.items():
         if cooldown > 0:
-            print("Cooldown for user " + id + " is " + str(cooldown - 1))
+            #print("Cooldown for user " + id + " is " + str(cooldown - 1))
             users_in_cooldown[id] = cooldown - 1
 
 def cooldown_loop():
@@ -47,7 +47,11 @@ def cooldown_loop():
         cooldown_lock = False
 
 def get_cooldown(id):
+    while cooldown_lock:
+        pass
     if str(id) not in users_in_cooldown:
+        return 0
+    if users_in_cooldown[str(id)] == 0:
         return 0
     return users_in_cooldown[str(id)];
 
@@ -83,6 +87,7 @@ async def on_voice_state_update(user, before, after):
             print("Not playing song for user " + user.name + " becuase of cooldown")
             update_user_cooldown(user.id)
             return
+
         update_user_cooldown(user.id)
 
         print("Playing user song for " + user.name);
