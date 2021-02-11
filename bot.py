@@ -10,7 +10,7 @@ import threading
 if not discord.opus.is_loaded():
  discord.opus.load_opus('libopus.so');
 
-#declare our discord client
+#Declare our discord client
 client = discord.Client()
 
 #___HELPER FUNCTIONS____
@@ -84,7 +84,7 @@ async def on_voice_state_update(user, before, after):
     #if the player is entering a channel
     if before.channel == None and after.channel != None:
         if get_cooldown(user.id) != 0:
-            print("Not playing song for user " + user.name + " becuase of cooldown")
+            print("Not playing song for user " + user.name + " because of use cooldown of " + get_cooldown(user.id))
             update_user_cooldown(user.id)
             return
 
