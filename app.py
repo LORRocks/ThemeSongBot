@@ -130,6 +130,7 @@ def upload():
 
         if file:
             filename = "song-" + user['id']
+            print("Song passed for user " + user["username"] + ", saving now")
             file.save(os.path.join(constants.UPLOAD_FOLDER, filename)+".mp3")
 
             #File length check
@@ -152,5 +153,5 @@ def upload():
 #---SETUP
 #run the flask app
 if __name__ == '__main__':
-    app.run()
+    app.run(host='0.0.0.0')
 

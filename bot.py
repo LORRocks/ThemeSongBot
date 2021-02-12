@@ -32,6 +32,8 @@ def update_user_cooldown(id):
         users_in_cooldown[str(id)] = users_in_cooldown[str(id)] * constants.COOLDOWN_MULTPLIER
         if users_in_cooldown[str(id)] < constants.MIN_COOLDOWN :
                 users_in_cooldown[str(id)] = constants.MIN_COOLDOWN
+        if users_in_cooldown[str(id)] > constants.MAX_COOLDOWN :
+                users_in_cooldown[str(id)] = constants.MAX_COOLDOWN
 
 def update_all_cooldowns():
     for id, cooldown in users_in_cooldown.items():
@@ -84,7 +86,7 @@ async def on_voice_state_update(user, before, after):
     #if the player is entering a channel
     if before.channel == None and after.channel != None:
         if get_cooldown(user.id) != 0:
-            print("Not playing song for user " + user.name + " because of use cooldown of " + get_cooldown(user.id))
+            print("Not playing song for user " + user.name + " because of use cooldown of " + str(get_cooldown(user.id)))
             update_user_cooldown(user.id)
             return
 
