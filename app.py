@@ -27,6 +27,11 @@ if 'http://' in constants.OAUTH2_REDIRECT_URI:
 def allowed_file(filename):
     return '.' in filename and \
            filename.rsplit('.', 1)[1].lower() in constants.ALLOWED_EXTENSIONS
+#A helper method to find the file extension of an uplaoded file
+def get_extension(filename)
+    return filename.rsplit('.',1)[1].lower()
+
+#----FLASK SESSION METHODS-----
 #Make a flask oauth session, so that it is persistent across sessions
 def make_session(token=None, state=None, scope=None):
     return OAuth2Session(
@@ -46,18 +51,7 @@ def make_session(token=None, state=None, scope=None):
     )
 def token_updater(token):
     session['oauth_token'] = token
-#This is a method that will peform audio normilization on a file, it seperate to allow being spin off in a different thread so we don't stall returning the webpage
-def normalize_audio(filename):
-    try: 
-        sound = AudioSegment.from_file(filename, "mp3")
-        change_in_dbfs = constants.TARGET_AUDIO_DBFS - sound.dBFS
-        normal_sound = sound.apply_gain(change_in_dbfs)
-        os.remove(filename)
-        normal_sound.export(filename, format="mp3")
-    except:
-        print("Error during audio normalization")
-
-
+ 
 #---ALL THE ROUTE METHODS FOR FLASK
 
 #When the user goes to the home page, check if they have a o auth cookie or not, otherwise just return the standard template
@@ -138,6 +132,7 @@ def upload():
             return render_template("user.html",username=user["username"],height=10,extratext="Your song was not an allowed file type, and was not saved. ")
 
         if file:
+            #Save the file to the upload folder, while were performing all the actions on it
             filename = "song-" + user['id']
             file.save(os.path.join(constants.UPLOAD_FOLDER, filename)+".mp3")
 
@@ -146,11 +141,17 @@ def upload():
             if(fileCheck.info.length > constants.ALLOWED_LENGTH):
                 os.remove(os.path.join(constants.UPLOAD_FOLDER, filename)+".mp3")
                 return render_template("user.html",username=user["username"],height=10, extratext="Your song was too long, it was not saved. This may be the result of incorrectly formated mp3 file.")
+        
+            #If needed, convert to our mp3 format
 
             #Peform the audio normal in a different thread
             normal_filename = os.path.join(constants.UPLOAD_FOLDER, filename)+".mp3"  
             normal_thread = threading.Thread(target=normalize_audio, args=(normal_filename,), daemon=True)
             normal_thread.start()
+
+            #Move the song to the db folder, clear up the upload folder
+
+            #Signal success
 
             return render_template("user.html",username=user["username"],height=10, extratext="Your song was uploaded successfully. ")
 
