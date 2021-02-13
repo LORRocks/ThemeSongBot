@@ -40,6 +40,8 @@ def update_all_cooldowns():
         if cooldown > 0:
             #print("Cooldown for user " + id + " is " + str(cooldown - 1))
             users_in_cooldown[id] = cooldown - 1
+            if cooldown == 0:
+                del users_in_cooldown[id]
 
 def cooldown_loop():
     while True:
