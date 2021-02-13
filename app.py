@@ -6,10 +6,16 @@ import constants
 import threading
 from pydub import AudioSegment
 
+from flask_limiter import Limiter
+from flask_limiter.util import get_remote_address
+
 #Initalize the flask app
 app = Flask(__name__)
 app.debug = True
 app.config['SECRET_KEY'] = constants.OAUTH2_CLIENT_SECRET
+
+#Set up the rate limiter
+limiter = Limiter(app, key_func=get_remote_address,  default_limits=["64 per day", "8 per hour"])
 
 #Check if we are using sls or not, set the appropriate settings
 if 'http://' in constants.OAUTH2_REDIRECT_URI:
@@ -42,11 +48,14 @@ def token_updater(token):
     session['oauth_token'] = token
 #This is a method that will peform audio normilization on a file, it seperate to allow being spin off in a different thread so we don't stall returning the webpage
 def normalize_audio(filename):
-    sound = AudioSegment.from_file(filename, "mp3")
-    change_in_dbfs = constants.TARGET_AUDIO_DBFS - sound.dBFS
-    normal_sound = sound.apply_gain(change_in_dbfs)
-    os.remove(filename)
-    normal_sound.export(filename, format="mp3")
+    try: 
+        sound = AudioSegment.from_file(filename, "mp3")
+        change_in_dbfs = constants.TARGET_AUDIO_DBFS - sound.dBFS
+        normal_sound = sound.apply_gain(change_in_dbfs)
+        os.remove(filename)
+        normal_sound.export(filename, format="mp3")
+    except:
+        print("Error during audio normalization")
 
 
 #---ALL THE ROUTE METHODS FOR FLASK
@@ -130,14 +139,13 @@ def upload():
 
         if file:
             filename = "song-" + user['id']
-            print("Song passed for user " + user["username"] + ", saving now")
             file.save(os.path.join(constants.UPLOAD_FOLDER, filename)+".mp3")
 
             #File length check
             fileCheck = MP3(os.path.join(constants.UPLOAD_FOLDER, filename)+".mp3")
             if(fileCheck.info.length > constants.ALLOWED_LENGTH):
                 os.remove(os.path.join(constants.UPLOAD_FOLDER, filename)+".mp3")
-                return render_template("user.html",username=user["username"],height=10, extratext="Your song was too long, it was not saved. ")
+                return render_template("user.html",username=user["username"],height=10, extratext="Your song was too long, it was not saved. This may be the result of incorrectly formated mp3 file.")
 
             #Peform the audio normal in a different thread
             normal_filename = os.path.join(constants.UPLOAD_FOLDER, filename)+".mp3"  
@@ -153,5 +161,5 @@ def upload():
 #---SETUP
 #run the flask app
 if __name__ == '__main__':
-    app.run(host='0.0.0.0')
+    app.run(host='0.0.0.0',debug=False)
 
