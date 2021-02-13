@@ -10,9 +10,10 @@ API_BASE_URL = os.environ.get('API_BASE_URI','https://discordapp.com/api')
 AUTHORIZATION_BASE_URL = API_BASE_URL + '/oauth2/authorize'
 TOKEN_URL = API_BASE_URL + '/oauth2/token'
 
-#Store the location of the upload folder and the allowed data type
-UPLOAD_FOLDER="songs"
-ALLOWED_EXTENSIONS = {'mp3'}
+#Store the location of the upload folder,db folder and the allowed data type
+UPLOAD_FOLDER="upload"
+DB_FOLDER="songs"
+ALLOWED_EXTENSIONS = {'mp3','ogg','wav'}
 ALLOWED_LENGTH = 3 #max allowed length in seconds
 TARGET_AUDIO_DBFS = -33 #the audio target in dbfs
 
