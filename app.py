@@ -1,13 +1,15 @@
 import os
-from flask import *
-from requests_oauthlib import OAuth2Session
-from mutagen.mp3 import MP3;
-import constants
 import threading
-from pydub import AudioSegment
 
+from pydub import AudioSegment
+from requests_oauthlib import OAuth2Session
+
+from flask import *
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
+
+import constants
+import audio
 
 #Initalize the flask app
 app = Flask(__name__)
@@ -28,7 +30,7 @@ def allowed_file(filename):
     return '.' in filename and \
            filename.rsplit('.', 1)[1].lower() in constants.ALLOWED_EXTENSIONS
 #A helper method to find the file extension of an uplaoded file
-def get_extension(filename)
+def get_extension(filename):
     return filename.rsplit('.',1)[1].lower()
 
 #----FLASK SESSION METHODS-----
@@ -123,6 +125,7 @@ def upload():
     user = discord.get(constants.API_BASE_URL + '/users/@me').json()
 
     if request.method == 'POST':
+        #Perform a series of sanity checks on the file input
         if 'file' not in request.files:
             return "Something boinked"
         file = request.files["file"]
@@ -131,28 +134,37 @@ def upload():
         if not allowed_file(file.filename):
             return render_template("user.html",username=user["username"],height=10,extratext="Your song was not an allowed file type, and was not saved. ")
 
+        #Peform checks on the valid input file
         if file:
-            #Save the file to the upload folder, while were performing all the actions on it
+            #Get the extension and filename
+            extension = get_extension(file.filename) 
             filename = "song-" + user['id']
-            file.save(os.path.join(constants.UPLOAD_FOLDER, filename)+".mp3")
+           
+            #Save the file to the upload folder, while we're performing all the actions on it
+            filepath = os.path.join(constants.UPLOAD_FOLDER, filename+"."+extension)
+            file.save(filepath)
 
             #File length check
-            fileCheck = MP3(os.path.join(constants.UPLOAD_FOLDER, filename)+".mp3")
-            if(fileCheck.info.length > constants.ALLOWED_LENGTH):
-                os.remove(os.path.join(constants.UPLOAD_FOLDER, filename)+".mp3")
-                return render_template("user.html",username=user["username"],height=10, extratext="Your song was too long, it was not saved. This may be the result of incorrectly formated mp3 file.")
-        
-            #If needed, convert to our mp3 format
+            print(filepath)
+            length = audio.get_audio_length(filepath)
+            if length > constants.ALLOWED_LENGTH:
+                os.remove(filepath)
+                return render_template("user.html",username=user["username"],height=10,extratext="Your song was too long and was not saved. ")
 
-            #Peform the audio normal in a different thread
-            normal_filename = os.path.join(constants.UPLOAD_FOLDER, filename)+".mp3"  
-            normal_thread = threading.Thread(target=normalize_audio, args=(normal_filename,), daemon=True)
-            normal_thread.start()
+            print(filepath)
+            #If needed, convert to our mp3 forma
+            if not extension == "mp3":
+                filepath = audio.convert_to_mp3(filepath)                                  
+
+            #Peform the audio normal
+            filepath = audio.normalize_audio(filepath)
 
             #Move the song to the db folder, clear up the upload folder
+            sound_input = AudioSegment.from_file(filepath)
+            sound_input.export(os.path.join(constants.DB_FOLDER,filename+".mp3"),format="mp3")
+            os.remove(filepath)
 
             #Signal success
-
             return render_template("user.html",username=user["username"],height=10, extratext="Your song was uploaded successfully. ")
 
     if request.method == "GET": #we should never get to this page, it only acts as a REST endpoint for uploading files
