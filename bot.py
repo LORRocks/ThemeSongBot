@@ -16,9 +16,9 @@ client = discord.Client()
 #___HELPER FUNCTIONS____
 def song_exists(id):
     filename = "song-" + str(id)
-    return os.path.exists(os.path.join(constants.UPLOAD_FOLDER,filename)+".mp3")
+    return os.path.exists(os.path.join(constants.DB_FOLDER,filename)+".mp3")
 def get_song_name(id):
-    return os.path.join(constants.UPLOAD_FOLDER,"song-" + str(id))+".mp3"
+    return os.path.join(constants.DB_FOLDER,"song-" + str(id))+".mp3"
 
 #___COOLDOWN FUNCTIONS___
 users_in_cooldown = {}
