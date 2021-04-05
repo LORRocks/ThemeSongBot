@@ -17,12 +17,14 @@ app.debug = True
 app.config['SECRET_KEY'] = constants.OAUTH2_CLIENT_SECRET
 
 #Set up the rate limiter
-limiter = Limiter(app, key_func=get_remote_address,  default_limits=["64 per day", "8 per hour"])
+if constants.CONFIG_SELECTED == "DEV":
+    limiter = Limiter(app, key_func=get_remote_address,  default_limits=["64 per day", "100 per hour"])
+if constants.CONFIG_SELECTED == "PRODUCTION":
+    limiter = Limiter(app, key_func=get_remote_address,  default_limits=["64 per day", "20 per hour"])
 
 #Check if we are using sls or not, set the appropriate settings
 if 'http://' in constants.OAUTH2_REDIRECT_URI:
     os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = 'true'
-
 
 #----HELPER METHODS-----
 #A helper method to check if the user is uploading an allowed file
@@ -174,5 +176,8 @@ def upload():
 #---SETUP
 #run the flask app
 if __name__ == '__main__':
-    app.run(host='0.0.0.0',debug=False)
+    if constants.CONFIG_SELECTED == "DEV":
+        app.run(host='127.0.0.1',debug=True)
+    if constants.CONFIG_SELECTED == "PRODUCTION":
+        app.run(host='0.0.0.0',debug=False)
 
