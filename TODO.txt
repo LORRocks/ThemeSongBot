@@ -1,3 +1,5 @@
+Work on proper deployement setup
+
 Graphic Redesign
 Admin Panel
 Split the upload endpoint into two seperate endpoints
